@@ -1,0 +1,150 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const prompt = require('prompt-sync')();
+const fs = require('fs');
+const path = require('path');
+const { spawn } = require('child_process');
+
+const app = express();
+const porta = 3000;
+
+// Define a pasta de arquivos estáticos
+app.use(express.static(path.join(__dirname, '')));
+
+// Rota para servir a página index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Outras rotas e configurações do seu servidor...
+
+// Inicia o servidor na porta 3000
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${porta}`);
+
+  // Redireciona para a página index.html
+  const open = require('open');
+  open('http://localhost:3000');
+});
+
+// Conexão com o banco de dados
+mongoose.connect('mongodb+srv://Jacques:Cadeira03-@estudos.gnksfby.mongodb.net/?retryWrites=true&w=majority&appName=estudos')
+
+// Esquema para os carros
+const carroSchema = new mongoose.Schema({
+  marca: String,
+  modelo: String,
+  ano: Number
+});
+
+// Esquema para os clientes
+const clienteSchema = new mongoose.Schema({
+  nome: String,
+  email: String,
+  telefone: String,
+  carros: [carroSchema] // Subcoleção de carros
+});
+
+// Modelo para os clientes
+const Cliente = mongoose.model('Cliente', clienteSchema);
+
+
+var operacao = parseInt(prompt("Qual operação você deseja realizar? 1(Consulta), 2(Inclusão), 3(Alteração), 4(Exclusão)"));
+switch (operacao) {
+  case 1:
+    Cliente.find()
+    .then((clientes) => {
+      console.log("Clientes Cadastrados:");
+      clientes.forEach((cliente) => {
+        console.log("Nome:", cliente.nome);
+        console.log("Email:", cliente.email);
+        console.log("Telefone:", cliente.telefone);
+        console.log("Carros:");
+        cliente.carros.forEach((carro) => {
+          console.log("- Marca:", carro.marca);
+          console.log("- Modelo:", carro.modelo);
+          console.log("- Ano:", carro.ano);
+        });
+        console.log("-----------------------");
+      });
+    })
+    .catch((error) => {
+      console.error("Erro ao consultar clientes:", error);
+    });
+    break;
+    
+  case 2:
+    try {
+      const data = fs.readFileSync('dados.json', 'utf8');
+      const { cliente, carro } = JSON.parse(data);
+
+      const novoCliente = new Cliente({
+        nome: cliente.nome,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        carros: [{
+          marca: carro.marca,
+          modelo: carro.modelo,
+          ano: carro.ano
+        }]
+      });
+
+      novoCliente.save()
+        .then(() => {
+          console.log("Cliente adicionado com sucesso!");
+        })
+        .catch((error) => {
+          console.error("Erro ao adicionar cliente:", error);
+        });
+    } catch (error) {
+      console.error("Erro ao ler arquivo JSON:", error);
+    }
+    break;
+
+  case 3:
+    const idClienteAlterar = prompt("Digite o ID do cliente que deseja alterar: ");
+    const idCarroAlterar = prompt("Digite o ID do carro que deseja alterar: ");
+
+    const nomeNovo = prompt("Digite o novo nome do cliente (ou pressione Enter para manter o mesmo): ");
+    const emailNovo = prompt("Digite o novo email do cliente (ou pressione Enter para manter o mesmo): ");
+    const telefoneNovo = prompt("Digite o novo telefone do cliente (ou pressione Enter para manter o mesmo): ");
+
+    const marcaCarroNovo = prompt("Digite a nova marca do carro do cliente (ou pressione Enter para manter o mesmo): ");
+    const modeloCarroNovo = prompt("Digite o novo modelo do carro do cliente (ou pressione Enter para manter o mesmo): ");
+    const anoCarroNovo = prompt("Digite o novo ano do carro do cliente (ou pressione Enter para manter o mesmo): ");
+
+    const updateData = {};
+    if (nomeNovo) updateData.nome = nomeNovo;
+    if (emailNovo) updateData.email = emailNovo;
+    if (telefoneNovo) updateData.telefone = telefoneNovo;
+
+    updateData['carros.$.marca'] = marcaCarroNovo;
+    updateData['carros.$.modelo'] = modeloCarroNovo;
+    updateData['carros.$.ano'] = anoCarroNovo;
+
+    Cliente.updateOne({ _id: idClienteAlterar, 'carros._id': idCarroAlterar }, updateData)
+      .then(() => {
+        console.log("Cliente e carro alterados com sucesso!");
+      })
+      .catch((error) => {
+        console.error("Erro ao alterar cliente e carro:", error);
+      });
+    break;
+
+  case 4:
+    const clienteExcluir = prompt("Digite o ID do cliente que deseja excluir: ");
+
+    Cliente.deleteOne({ _id: clienteExcluir })
+      .then(() => {
+        console.log("Cliente excluído com sucesso!");
+      })
+      .catch((error) => {
+        console.error("Erro ao excluir cliente:", error);
+      });
+    break;
+    
+  default:
+    console.log("Operação inválida");
+    break;
+}

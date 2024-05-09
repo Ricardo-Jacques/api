@@ -1,0 +1,13 @@
+Olá, professor. 
+
+Tive um problema de leitura no caminho do arquivo
+CSS e JS do index.html devido ao servidor do Replit, 
+então coloquei toda a configuração CSS e 
+o SCRIPT dentro do html mesmo. 
+
+Outro detalhe importante: Quando escolher a opção 5 ou 6 do 
+switch, coloque o endereço da página na barra do WebView. 
+Para a página de geração do arquivo.JSON, digite 
+apenas "/" e aperte enter.
+Para a página que exibe o gráfico, digite "/grafico" 
+e aperte enter.

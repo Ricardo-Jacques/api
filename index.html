@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cadastrar clientes com API</title>
+  </head>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    div {
+      display: flex;
+      justify-content: center;
+      width: 250px;
+    }
+
+    label {
+      width: 100%;
+    }
+
+    input {
+      width: 200px;
+    }
+
+    button.cadastrar {
+      cursor: pointer;
+      margin: 10px 0px 0px 0px;
+      background-color: blue;
+      border: 2px solid blue;
+      border-radius: 8px;
+      height: 60px;
+      width: 180px;
+      color: white;
+      font-size: 1.2em;
+    }
+  </style>
+  
+  <body>
+    <form id="cadastroForm">
+      <h1>Cadastro de Usuário</h1>
+      <div>
+        <label>Nome:</label>
+        <input id="nome" />
+      </div>
+      <div>
+        <label>E-mail:</label>
+        <input id="email" />
+      </div>
+      <div>
+        <label>Telefone:</label>
+        <input id="telefone" />
+      </div>
+      <h2>Dados do veículo</h2>
+      <div>
+        <label>Marca:</label>
+        <input id="marca" />
+      </div>
+      <div>
+        <label>Modelo:</label>
+        <input id="modelo" />
+      </div>
+      <div>
+        <label>Ano:</label>
+        <input id="ano" />
+      </div>
+      <button class="cadastrar" onclick="cadastrar()">Cadastrar</button>
+    </form>
+    
+  <script>
+    function cadastrar() {
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const telefone = document.getElementById('telefone').value;
+      const marca = document.getElementById('marca').value;
+      const modelo = document.getElementById('modelo').value;
+      const ano = document.getElementById('ano').value;
+
+      const dados = {
+        cliente: {
+          nome: nome,
+          email: email,
+          telefone: telefone
+        },
+        carro: {
+          marca: marca,
+          modelo: modelo,
+          ano: parseInt(ano)
+        }
+      };
+
+      const jsonDados = JSON.stringify(dados);
+
+      const blob = new Blob([jsonDados], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dados.json';
+      a.click();
+    }
+  </script>
+  </body>
+</html>
